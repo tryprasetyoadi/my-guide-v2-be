@@ -26,6 +26,7 @@ Route::controller(LoginRegisterController::class)->group(function () {
 
 // Protected routes of product and logout
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [LoginRegisterController::class, 'me']);
     Route::post('/logout', [LoginRegisterController::class, 'logout']);
 
     Route::controller(ProductController::class)->group(function () {

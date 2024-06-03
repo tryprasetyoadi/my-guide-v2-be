@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Validator;
 
@@ -16,6 +18,29 @@ class LoginRegisterController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
+    public function me()
+    {
+        $user = Auth::user();
+        $me = [];
+        if ($user->roles_id == 1) {
+            $me['countUser'] = User::count();
+            $me['countWisata'] = Product::count();
+            $me['user'] = User::where('id', $user->id)->first();
+            $me['lastuser'] = $me['lastuser'] = User::selectRaw("DATE(created_at) as created_at, id, name")
+                ->orderBy("created_at", "DESC")
+                ->limit(10)
+                ->get();
+            $me['lastwisata'] = Product::orderBy("created_at", "DESC")->limit(10)->get();
+        } else if ($user->roles == 3) {
+            $me['countWisata'] = Product::where('user_id', $user->id)->count();
+            $me['user'] = User::where('id', $user->id)->first();
+        } else {
+            $me['user'] = User::where('id', $user->id)->first();
+        }
+
+        return response()->json(["data" => $me, "message" => 'User Fetched Successfully'], 200);
+    }
     public function register(Request $request)
     {
         $validate = Validator::make($request->all(), [
