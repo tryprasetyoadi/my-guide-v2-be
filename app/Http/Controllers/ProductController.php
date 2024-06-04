@@ -17,7 +17,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->get();
+        $products = Product::latest()->paginate();
 
         if (is_null($products->first())) {
             return response()->json([
@@ -43,8 +43,9 @@ class ProductController extends Controller
         $validate = Validator::make($request->all(), [
             'name' => 'required|string|max:250',
             'description' => 'required|string|',
-            'price' => 'required'
-
+            'price' => 'required',
+            'image' => 'required|mimes:jpg,jpeg,png|max:2048',
+            'alamat' => 'required|string'
         ]);
 
         if ($validate->fails()) {
@@ -60,7 +61,13 @@ class ProductController extends Controller
         $tour->user_id = Auth::user()->id;
         $tour->name = $request->name;
         $tour->description = $request->description;
+        if ($request->file('image')) {
+            $image = $request->file('image');
+            $file = $request->image->storeAs('images', $image);
+            $tour->image =  $file->store('public');
+        }
         $tour->price = $request->price;
+        $tour->alamat = $request->alamat;
         $tour->save();
 
 
@@ -103,7 +110,10 @@ class ProductController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'name' => 'required',
-            'description' => 'required'
+            'description' => 'required',
+            'price' => 'required',
+            'image' => 'required|mimes:jpg,jpeg,png|max:2048',
+            'alamat' => 'required|string'
         ]);
 
         if ($validate->fails()) {
@@ -123,12 +133,30 @@ class ProductController extends Controller
             ], 200);
         }
 
-        $product->update($request->all());
+        $product->name = $request->name;
+        $product->description = $request->description;
+        $product->price = $request->price;
+        $product->alamat = $request->alamat;
+        if ($request->file('image')) {
+            $image = $request->file('image');
+            $file = $request->image->storeAs('images', $image);
+            $product->image =  $file->store('public');
+        }
+        $save = $product->save();
 
+        if ($save) {
+            $response = [
+                'status' => 'success',
+                'message' => 'Tour is updated successfully.',
+                'data' => $product,
+            ];
+
+            return response()->json($response, 200);
+        }
         $response = [
             'status' => 'success',
-            'message' => 'Tour is updated successfully.',
-            'data' => $product,
+            'message' => 'Tour  update failed.',
+            'data' => null,
         ];
 
         return response()->json($response, 200);

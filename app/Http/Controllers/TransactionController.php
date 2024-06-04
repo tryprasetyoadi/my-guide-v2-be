@@ -15,7 +15,7 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        $transactions = Transaction::get();
+        $transactions = Transaction::paginate();
         $output = array(
             "count" => count($transactions),
             "message" => "Get transactions succssfully!",

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Auth\LoginRegisterController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,9 +25,15 @@ Route::controller(LoginRegisterController::class)->group(function () {
 });
 
 
+Route::post('/user/delete/{id}', [UserController::class, 'destroy']);
 // Protected routes of product and logout
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', [LoginRegisterController::class, 'me']);
+    Route::get('/me', [UserController::class, 'me']);
+    Route::get('/user', [UserController::class, 'index']);
+    Route::get('/user/search', [UserController::class, 'search']);
+    Route::post('/user/register', [LoginRegisterController::class, 'register']);
+    Route::get('/user/edit/{id}', [UserController::class, 'show']);
+    Route::post('/user/edit/{id}', [UserController::class, 'update']);
     Route::post('/logout', [LoginRegisterController::class, 'logout']);
 
     Route::controller(ProductController::class)->group(function () {
