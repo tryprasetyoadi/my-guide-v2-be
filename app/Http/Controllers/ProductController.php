@@ -17,22 +17,43 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->paginate();
+        $user = Auth::user()->roles_id;
 
-        if (is_null($products->first())) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => "No tour's found!",
-            ], 200);
+        if ($user == 1) {
+            $products = Product::latest()->paginate(10);
+            $response = [
+                'cek' => 1,
+                'status' => 'success',
+                'message' => 'Tours are retrieved successfully.',
+                'data' => $products,
+            ];
+
+            return response()->json($response, 200);
+        } else if ($user == 3) {
+            $products = Product::where('user_id', $user)->paginate(10);
+            $response = [
+                'cek' => 2,
+                'status' => 'success',
+                'message' => 'Tours are retrieved successfully.',
+                'data' => $products,
+            ];
+
+            return response()->json($response, 200);
         }
-
         $response = [
+            'cek' => $user,
             'status' => 'success',
             'message' => 'Tours are retrieved successfully.',
-            'data' => $products,
+            'data' => null,
         ];
 
         return response()->json($response, 200);
+    }
+
+    public function getWisata()
+    {
+        $wisata = Product::selectRaw('users.id as tourguide_id, users.name as tourguide_name, users.email as tourguide_email, products.*')->join('users', 'users.id', '=', 'products.user_id')->get();
+        return response()->json(['data' => $wisata, 'message' => 'wisata successfully fetched!'], 200);
     }
 
     /**
@@ -63,8 +84,11 @@ class ProductController extends Controller
         $tour->description = $request->description;
         if ($request->file('image')) {
             $image = $request->file('image');
-            $file = $request->image->storeAs('images', $image);
-            $tour->image =  $file->store('public');
+            $extension = $image->getClientOriginalExtension();
+            $filename = time() . '-' . $extension;
+            $path = 'uploads/category/';
+            $image->move($path, $filename);
+            $tour->image =  $path . $filename;
         }
         $tour->price = $request->price;
         $tour->alamat = $request->alamat;
@@ -112,7 +136,7 @@ class ProductController extends Controller
             'name' => 'required',
             'description' => 'required',
             'price' => 'required',
-            'image' => 'required|mimes:jpg,jpeg,png|max:2048',
+            'image' => 'mimes:jpg,jpeg,png|max:2048',
             'alamat' => 'required|string'
         ]);
 
@@ -139,8 +163,11 @@ class ProductController extends Controller
         $product->alamat = $request->alamat;
         if ($request->file('image')) {
             $image = $request->file('image');
-            $file = $request->image->storeAs('images', $image);
-            $product->image =  $file->store('public');
+            $extension = $image->getClientOriginalExtension();
+            $filename = time() . '-' . $extension;
+            $path = 'uploads/category/';
+            $image->move($path, $filename);
+            $product->image =  $path . $filename;
         }
         $save = $product->save();
 

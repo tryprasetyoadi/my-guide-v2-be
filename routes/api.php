@@ -30,6 +30,7 @@ Route::post('/user/delete/{id}', [UserController::class, 'destroy']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [UserController::class, 'me']);
     Route::get('/user', [UserController::class, 'index']);
+    Route::get('/user/{id}', [UserController::class, 'show']);
     Route::get('/user/search', [UserController::class, 'search']);
     Route::post('/user/register', [LoginRegisterController::class, 'register']);
     Route::get('/user/edit/{id}', [UserController::class, 'show']);
@@ -37,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginRegisterController::class, 'logout']);
 
     Route::controller(ProductController::class)->group(function () {
+        Route::get('/getWisata', 'getWisata');
         Route::get('/wisata', 'index');
         Route::get('/wisata/{id}', 'show');
         Route::post('/wisata', 'store');

@@ -13,9 +13,16 @@ class TransactionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = Transaction::paginate();
+        $input = $request->all();
+        $transactions = Transaction::join('users as c', 'c.id', '=', 'customer_id')
+            ->join('users as t', 't.id', '=', 'tourguide_id')
+            ->join('products as p', 'p.id', '=', 'product_id')
+            ->where('p.id', $input['id'])
+            ->where('transactions.is_orders_done', 0)
+            ->selectRaw("p.id as product_id, transactions.id, t.name as tourguide_name, c.name as customer_name, p.name as nama_wisata, p.price as harga_wisata, transactions.tanggal_wisata, transactions.metode_pembayaran")
+            ->paginate();
         $output = array(
             "count" => count($transactions),
             "message" => "Get transactions succssfully!",
@@ -38,6 +45,8 @@ class TransactionController extends Controller
             'customer_id' => 'required|exists:users,id',
             'tourguide_id' => 'required|exists:users,id',
             'product_id' => 'required|exists:products,id',
+            'tanggal_wisata' => 'required',
+            'metode_pembayaran' => 'required',
             'is_orders_done' => 'boolean',
         ]);
 
@@ -80,9 +89,6 @@ class TransactionController extends Controller
         }
 
         $validatedData = $request->validate([
-            'customer_id' => 'equired|exists:users,id',
-            'tourguide_id' => 'equired|exists:users,id',
-            'product_id' => 'equired|exists:products,id',
             'is_orders_done' => 'boolean',
         ]);
 
