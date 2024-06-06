@@ -30,7 +30,7 @@ class ProductController extends Controller
 
             return response()->json($response, 200);
         } else if ($user == 3) {
-            $products = Product::where('user_id', $user)->paginate(10);
+            $products = Product::where('user_id', Auth::user()->id)->paginate(10);
             $response = [
                 'cek' => 2,
                 'status' => 'success',
